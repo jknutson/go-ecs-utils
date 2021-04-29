@@ -2,10 +2,11 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"flag"
 	"log"
 	"os"
-	// "regexp"
+	"regexp"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -18,6 +19,7 @@ var (
 	BuildVersion     string
 	clusterName      string
 	serviceArn       string
+	serviceArnRegexp *regexp.Regexp
 	confirmUpdate    bool
 	verbose, version bool
 )
@@ -31,7 +33,6 @@ Options:`)
 }
 
 func initFlags() {
-	flag.StringVar(&clusterName, "clusterName", "default", "ECS Cluster name")
 	flag.StringVar(&serviceArn, "serviceArn", "", "ECS Service ARN; '-' reads from STDIN (required)")
 	flag.BoolVar(&confirmUpdate, "confirmUpdate", false, "confirm update")
 	flag.BoolVar(&verbose, "verbose", false, "verbose output")
@@ -47,20 +48,25 @@ func initFlags() {
 
 	if verbose {
 		log.Printf("BuildVersion: %s\n", BuildVersion)
-		log.Printf("clusterName: %s\n", clusterName)
 		log.Printf("serviceArn: %s\n", serviceArn)
 		log.Printf("confirmUpdate: %t\n", confirmUpdate)
 	}
 
-	// TODO: validate ARN/name regex
 	// TODO: exit/error if serviceArn == ""
-	// TODO: parse clusterName from ARN, remove flag
 }
 
 func updateService(sess *session.Session, serviceArn string) error {
+	serviceArnMatch := serviceArnRegexp.FindAllStringSubmatch(serviceArn, -1)
+	if serviceArnMatch == nil {
+		return errors.New("invalid format for serviceArn")
+	}
+	clusterName = serviceArnMatch[0][3]
+
 	if verbose {
 		log.Printf("updateService: %s\n", serviceArn)
+		log.Printf("clusterName: %s\n", clusterName)
 	}
+
 	if confirmUpdate {
 		svc := ecs.New(sess)
 		updateServiceInput := &ecs.UpdateServiceInput{
@@ -93,6 +99,8 @@ func awsError(err error) {
 
 func main() {
 	initFlags()
+
+	serviceArnRegexp = regexp.MustCompile(`^arn\:aws\:ecs\:(.+)\:(\d+)\:service\/(.+)\/(.+)$`)
 
 	sess, err := session.NewSession()
 	if err != nil {
