@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"regexp"
@@ -105,6 +106,6 @@ func main() {
 	}
 
 	for _, serviceArn := range clusterServices {
-		log.Printf("%s\n", serviceArn)
+		fmt.Printf("%s\n", serviceArn)
 	}
 }
