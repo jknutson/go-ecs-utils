@@ -52,16 +52,16 @@ func initFlags() {
 		log.Printf("confirmUpdate: %t\n", confirmUpdate)
 	}
 
+	// TODO: validate ARN/name regex
 	// TODO: exit/error if serviceArn == ""
+	// TODO: parse clusterName from ARN, remove flag
 }
 
 func updateService(sess *session.Session, serviceArn string) error {
+	if verbose {
+		log.Printf("updateService: %s\n", serviceArn)
+	}
 	if confirmUpdate {
-		// TODO: validate ARN regex
-		if verbose {
-			log.Printf("updating %s\n", serviceArn)
-		}
-
 		svc := ecs.New(sess)
 		updateServiceInput := &ecs.UpdateServiceInput{
 			Cluster:            aws.String(clusterName),
@@ -73,7 +73,7 @@ func updateService(sess *session.Session, serviceArn string) error {
 		if err != nil {
 			return err
 		}
-		log.Printf("updated %s\n", serviceArn)
+		log.Printf("updated: %s\n", serviceArn)
 		return nil
 	}
 	if verbose {
