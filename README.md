@@ -3,21 +3,12 @@
 ## building
 
 ```sh
-go build -o ./bin/ecs-utils -v main.go
-```
-
-There is also a Makefile
-
-```sh
-# for OSX
-make build-darwin
-
-# cross-compile for RaspberryPi
-make build-raspi
+make build
 ```
 
 # usage
 
 ```sh
-./bin/ecs-utils
+./bin/listServices -h
+./bin/updateService -h
 ```
