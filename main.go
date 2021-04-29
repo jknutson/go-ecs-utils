@@ -1,7 +1,9 @@
 package main
 
 import (
+	"flag"
 	"log"
+	"os"
 	"regexp"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,16 +13,41 @@ import (
 )
 
 var (
-	ecsCluster          string = "tst-novu-apps"
+	//BuildVersion is set during `go build` by `VERSION.txt`
+	BuildVersion        string
+	clusterName         string
 	serviceFilter       *regexp.Regexp
-	serviceFilterString string = `.*qa7.*` // TODO: get from flag
-	verbose             bool   = true      // TODO: get from flag
+	serviceFilterString string
+	verbose, version    bool
 )
 
+func usage() {
+	println(`Usage: ecs-utils [options]
+Work with AWS ECS
+Options:`)
+	flag.PrintDefaults()
+	println(`For more information, see https://github.com/jknutson/one-wire-temp-go`)
+}
+
+func initFlags() {
+	flag.StringVar(&clusterName, "clusterName", "default", "ECS cluster name")
+	flag.StringVar(&serviceFilterString, "serviceFilter", `.*`, "Service Filter (RegExp pattern)")
+	flag.BoolVar(&verbose, "verbose", false, "verbose output")
+	flag.BoolVar(&version, "version", false, "display version and exit")
+
+	flag.Usage = usage
+	flag.Parse()
+
+	if version {
+		log.Printf("version: %s\n", BuildVersion)
+		os.Exit(0)
+	}
+}
+
 func main() {
+	initFlags()
 	var clusterServices []string
 
-	// TODO: get string from flag
 	serviceFilter = regexp.MustCompile(serviceFilterString)
 
 	sess, err := session.NewSession()
@@ -29,7 +56,7 @@ func main() {
 	}
 	svc := ecs.New(sess)
 	listServicesInput := &ecs.ListServicesInput{
-		Cluster: aws.String(ecsCluster),
+		Cluster: aws.String(clusterName),
 	}
 
 	for {
