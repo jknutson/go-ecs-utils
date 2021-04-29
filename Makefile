@@ -12,6 +12,7 @@ GOGET=$(GOCMD) get
 GOVERSION=1.15
 GOFLAGS="-X main.BuildVersion=$(PROJECT_VERSION)"
 LIST_SERVICES=listServices
+UPDATE_SERVICE=updateService
 
 ifeq ($(OS),Windows_NT)
 	@echo "Windows not supported by this Makefile, sorry!"
@@ -37,11 +38,16 @@ clean:
 # Cross compilation
 build-linux:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o "./bin/$(LIST_SERVICES)_linux" -ldflags $(GOFLAGS) -v "cmd/$(LIST_SERVICES)/main.go"
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o "./bin/$(UPDATE_SERVICE)_linux" -ldflags $(GOFLAGS) -v "cmd/$(UPDATE_SERVICE)/main.go"
 build-arm:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm $(GOBUILD) -o "./bin/$(LIST_SERVICES)_arm" -ldflags $(GOFLAGS) -v "cmd/$(LIST_SERVICES)/main.go"
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm $(GOBUILD) -o "./bin/$(UPDATE_SERVICE)_arm" -ldflags $(GOFLAGS) -v "cmd/$(UPDATE_SERVICE)/main.go"
 build-raspi:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=5 $(GOBUILD) -o "./bin/$(LIST_SERVICES)_raspi" -ldflags $(GOFLAGS) -v "cmd/$(LIST_SERVICES)/main.go"
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=5 $(GOBUILD) -o "./bin/$(UPDATE_SERVICE)_raspi" -ldflags $(GOFLAGS) -v "cmd/$(UPDATE_SERVICE)/main.go"
 build-darwin:
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o "./bin/$(LIST_SERVICES)_darwin" -ldflags $(GOFLAGS) -v "cmd/$(LIST_SERVICES)/main.go"
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o "./bin/$(UPDATE_SERVICE)_darwin" -ldflags $(GOFLAGS) -v "cmd/$(UPDATE_SERVICE)/main.go"
 docker-build:
 	docker run --rm -it -v "$(GOPATH)":/go -w "/go/src/github.com/novu/$(PROJECT)" golang:$(GOVERSION) $(GOBUILD) -o "./bin/$(LIST_SERVICES)" -ldflags $(GOFLAGS) -v "cmd/$(LIST_SERVICES)/main.go"
+	docker run --rm -it -v "$(GOPATH)":/go -w "/go/src/github.com/novu/$(PROJECT)" golang:$(GOVERSION) $(GOBUILD) -o "./bin/$(UPDATE_SERVICE)" -ldflags $(GOFLAGS) -v "cmd/$(UPDATE_SERVICE)/main.go"
